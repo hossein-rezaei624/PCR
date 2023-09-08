@@ -174,21 +174,22 @@ class ProxyContrastiveReplay(ContinualLearner):
         top_n = self.params.mem_size
         
         # Find the indices that would sort the array
-        sorted_indices_1 = np.argsort(Confidence_mean.numpy())
+        #sorted_indices_1 = np.argsort(Confidence_mean.numpy())
         sorted_indices_2 = np.argsort(Variability.numpy())
         
         # Take the last 'top_n' indices (i.e., the top values)
-        top_indices_1 = sorted_indices_1[:int(0.98*top_n)]
-        top_indices_2 = sorted_indices_1[-int(0.01*top_n):]
-        top_indices_3 = sorted_indices_2[-(top_n - (int(0.98*top_n) + int(0.01*top_n))):]
+        #top_indices_1 = sorted_indices_1[:int(0.98*top_n)]
+        #top_indices_2 = sorted_indices_1[-int(0.01*top_n):]
+        #top_indices_3 = sorted_indices_2[-(top_n - (int(0.98*top_n) + int(0.01*top_n))):]
+        top_indices = sorted_indices_2[-top_n:]
         
         #print("top_indicesssss", top_indices.shape, top_indices, type(top_indices))
 
-        top_indices_12 = np.concatenate((top_indices_1, top_indices_2))
-        top_indices_123 = np.concatenate((top_indices_12, top_indices_3))
+        #top_indices_12 = np.concatenate((top_indices_1, top_indices_2))
+        #top_indices_123 = np.concatenate((top_indices_12, top_indices_3))
         
         # If you want these indices in ascending order, you can sort them
-        top_indices_sorted = np.sort(top_indices_123)
+        top_indices_sorted = np.sort(top_indices)
         
         #print("top_indices_sorted", top_indices_sorted, top_indices_sorted.shape)
         print("top_indices_sorted.shape", top_indices_sorted.shape)
