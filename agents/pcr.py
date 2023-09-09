@@ -267,7 +267,6 @@ class ProxyContrastiveReplay(ContinualLearner):
                     self.opt.step()
                 # update mem
                 if count_ == self.buffer.buffer_label.shape[0]:
-                    print("aaaaaaaaaaaa")
                     self.buffer.update(batch_x, batch_y)
 
         #print("self.buffer.buffer_img", self.buffer.buffer_img.shape, type(self.buffer.buffer_img))
