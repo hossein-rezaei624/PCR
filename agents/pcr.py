@@ -211,8 +211,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         #print(all_images.shape)  # This should print something like torch.Size([50000, 3, 32, 32]) depending on your DataLoader's batch size
         #print(all_labels.shape)  # This should print torch.Size([50000])
 
-        self.buffer.buffer_img = all_images.to(device)
-        self.buffer.buffer_label = all_labels.to(device)
+
 
         # set up model
         self.model = self.model.train()
@@ -267,13 +266,15 @@ class ProxyContrastiveReplay(ContinualLearner):
                     novel_loss.backward()
                     self.opt.step()
                 # update mem
-                #self.buffer.update(batch_x, batch_y)
+                if count_ == self.buffer.buffer_label.shape[0]:
+                    print("aaaaaaaaaaaa")
+                    self.buffer.update(batch_x, batch_y)
 
         #print("self.buffer.buffer_img", self.buffer.buffer_img.shape, type(self.buffer.buffer_img))
         #print("self.buffer.buffer_label", self.buffer.buffer_label.shape, type(self.buffer.buffer_label), self.buffer.buffer_label)
 
-        ##self.buffer.buffer_img = all_images.to(device)
-        ##self.buffer.buffer_label = all_labels.to(device)
+        self.buffer.buffer_img = all_images.to(device)
+        self.buffer.buffer_label = all_labels.to(device)
 
         #print("self.buffer.buffer_img", self.buffer.buffer_img.shape, type(self.buffer.buffer_img))
         #print("self.buffer.buffer_label", self.buffer.buffer_label.shape, type(self.buffer.buffer_label), self.buffer.buffer_label)
