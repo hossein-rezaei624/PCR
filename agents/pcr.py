@@ -181,7 +181,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         #top_indices_1 = sorted_indices_1[:int(0.98*top_n)]
         #top_indices_2 = sorted_indices_1[-int(0.01*top_n):]
         #top_indices_3 = sorted_indices_2[-(top_n - (int(0.98*top_n) + int(0.01*top_n))):]
-        top_indices = sorted_indices_1[-top_n:]
+        top_indices = sorted_indices_1[:top_n]
         
         #print("top_indicesssss", top_indices.shape, top_indices, type(top_indices))
 
