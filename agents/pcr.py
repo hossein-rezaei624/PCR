@@ -271,8 +271,8 @@ class ProxyContrastiveReplay(ContinualLearner):
         #print("self.buffer.buffer_img", self.buffer.buffer_img.shape, type(self.buffer.buffer_img))
         #print("self.buffer.buffer_label", self.buffer.buffer_label.shape, type(self.buffer.buffer_label), self.buffer.buffer_label)
 
-        self.buffer.buffer_img = all_images.to(device)
-        self.buffer.buffer_label = all_labels.to(device)
+        ##self.buffer.buffer_img = all_images.to(device)
+        ##self.buffer.buffer_label = all_labels.to(device)
 
         #print("self.buffer.buffer_img", self.buffer.buffer_img.shape, type(self.buffer.buffer_img))
         #print("self.buffer.buffer_label", self.buffer.buffer_label.shape, type(self.buffer.buffer_label), self.buffer.buffer_label)
