@@ -266,7 +266,7 @@ class ProxyContrastiveReplay(ContinualLearner):
                     novel_loss.backward()
                     self.opt.step()
                 # update mem
-                self.buffer.update(batch_x, batch_y)
+                #self.buffer.update(batch_x, batch_y)
 
         #print("self.buffer.buffer_img", self.buffer.buffer_img.shape, type(self.buffer.buffer_img))
         #print("self.buffer.buffer_label", self.buffer.buffer_label.shape, type(self.buffer.buffer_label), self.buffer.buffer_label)
