@@ -299,7 +299,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         unique_classes__ = set()
         
         for labels__ in self.buffer.buffer_label:
-            unique_classes__.update(labels__.numpy())
+            unique_classes__.update(labels__.cpu().numpy())
 
         print("unique_classes__", unique_classes__)
         
