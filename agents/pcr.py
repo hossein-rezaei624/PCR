@@ -7,7 +7,7 @@ from utils.setup_elements import transforms_match, transforms_aug
 from utils.utils import maybe_cuda
 from utils.loss import SupConLoss
 
-from models.resnet import ResNet18
+from models.resnet import Reduced_ResNet18
 import numpy as np
 import torch.optim as optim
 import torch.nn as nn
@@ -76,7 +76,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         #print(f"Number of unique classes: {len(unique_classes)}", unique_classes)'''
 
         device = "cuda"
-        Model_Carto = ResNet18(len(unique_classes))
+        Model_Carto = Reduced_ResNet18(len(unique_classes))
         Model_Carto = Model_Carto.to(device)
         criterion_ = nn.CrossEntropyLoss()
         optimizer_ = optim.SGD(Model_Carto.parameters(), lr=0.1,
