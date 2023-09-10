@@ -296,4 +296,11 @@ class ProxyContrastiveReplay(ContinualLearner):
         #print("self.buffer.buffer_img", self.buffer.buffer_img.shape, type(self.buffer.buffer_img))
         #print("self.buffer.buffer_label", self.buffer.buffer_label.shape, type(self.buffer.buffer_label), self.buffer.buffer_label)
 
+        unique_classes__ = set()
+        
+        for labels__ in self.buffer.buffer_label:
+            unique_classes__.update(labels__.numpy())
+
+        print("unique_classes__", unique_classes__)
+        
         self.after_train()
