@@ -46,7 +46,7 @@ def multiple_run(params, store=False, save_path=None):
             for i, (x_train, y_train, labels) in enumerate(data_continuum):
                 print("-----------run {} training batch {}-------------".format(run, i))
                 print('size: {}, {}'.format(x_train.shape, y_train.shape))
-                agent.train_learner(x_train, y_train, i)
+                agent.train_learner(x_train, y_train)
                 acc_array = agent.evaluate(test_loaders)
                 tmp_acc.append(acc_array)
             run_end = time.time()
