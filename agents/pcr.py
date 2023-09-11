@@ -146,14 +146,14 @@ class ProxyContrastiveReplay(ContinualLearner):
                 correct += predicted.eq(targets).sum().item()
         
 
-            print("Accuracy:", 100.*correct/total, ", and:", correct, "/", total)
+            print("Accuracy:", 100.*correct/total, ", and:", correct, "/", total, train_loss)
             conf_tensor = torch.tensor(confidence_epoch)
             conf_tensor = conf_tensor.reshape(conf_tensor.shape[0]*conf_tensor.shape[1])
             conf_tensor = conf_tensor[:total]
             #print(conf_tensor.shape)
             
             Carto.append(conf_tensor.numpy())
-            scheduler_.step()
+            #scheduler_.step()
 
         Carto_tensor = torch.tensor(np.array(Carto))
         #print(Carto_tensor.shape)
