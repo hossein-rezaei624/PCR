@@ -7,13 +7,14 @@ from utils.setup_elements import transforms_match, transforms_aug
 from utils.utils import maybe_cuda
 from utils.loss import SupConLoss
 
-from models.resnet import Reduced_ResNet18
+from models.resnet1 import *
 import numpy as np
 import torch.optim as optim
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from torch.utils.data import ConcatDataset
 import random
+import torch.backends.cudnn as cudnn
 
 class ProxyContrastiveReplay(ContinualLearner):
     """
@@ -76,8 +77,12 @@ class ProxyContrastiveReplay(ContinualLearner):
         #print(f"Number of unique classes: {len(unique_classes)}", unique_classes)'''
 
         device = "cuda"
-        Model_Carto = Reduced_ResNet18(len(unique_classes))
+        Model_Carto = ResNet18()
         Model_Carto = Model_Carto.to(device)
+
+        Model_Carto = torch.nn.DataParallel(Model_Carto)
+        cudnn.benchmark = True
+        
         criterion_ = nn.CrossEntropyLoss()
         optimizer_ = optim.SGD(Model_Carto.parameters(), lr=0.1,
                               momentum=0.9, weight_decay=5e-4)
@@ -99,7 +104,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         
         # Training
         Carto = []
-        for epoch_ in range(12):
+        for epoch_ in range(6):
             print('\nEpoch: %d' % epoch_)
             Model_Carto.train()
             train_loss = 0
