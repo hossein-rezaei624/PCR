@@ -99,7 +99,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         
         # Training
         Carto = []
-        for epoch_ in range(3):
+        for epoch_ in range(12):
             print('\nEpoch: %d' % epoch_)
             Model_Carto.train()
             train_loss = 0
