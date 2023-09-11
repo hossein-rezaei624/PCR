@@ -44,8 +44,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         #print("x_trainnnnnnn", x_train.shape, type(x_train))
         # set up loader
         train_dataset = dataset_transform(x_train, y_train, transform=transforms_match[self.data])
-        train_loader = data.DataLoader(train_dataset, batch_size=self.batch, shuffle=False, num_workers=0,
-                                       drop_last=True)
+        train_loader = data.DataLoader(train_dataset, batch_size=self.batch, shuffle=False, num_workers=2)
         
         unique_classes = set()
         
