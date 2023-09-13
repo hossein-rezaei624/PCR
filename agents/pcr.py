@@ -14,7 +14,6 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from torch.utils.data import ConcatDataset
 import random
-import torch.backends.cudnn as cudnn
 
 class ProxyContrastiveReplay(ContinualLearner):
     """
