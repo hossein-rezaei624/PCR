@@ -7,7 +7,7 @@ from utils.setup_elements import transforms_match, transforms_aug
 from utils.utils import maybe_cuda
 from utils.loss import SupConLoss
 
-from models.resnet1 import *
+from models.resnet import ResNet18
 import numpy as np
 import torch.optim as optim
 import torch.nn as nn
