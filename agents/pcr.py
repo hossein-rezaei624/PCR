@@ -35,16 +35,17 @@ class ProxyContrastiveReplay(ContinualLearner):
         self.mem_iters = params.mem_iters
 
         self.soft_ = nn.Softmax(dim=1)
-    
-    
 
+
+    
     def train_learner(self, x_train, y_train, task_number):        
         self.before_train(x_train, y_train)
         #print("y_trainnnnnnn", y_train.shape, type(y_train), y_train)
         #print("x_trainnnnnnn", x_train.shape, type(x_train))
         # set up loader
         train_dataset = dataset_transform(x_train, y_train, transform=transforms_match[self.data])
-        train_loader = data.DataLoader(train_dataset, batch_size=self.batch, shuffle=False, num_workers=2)
+        train_loader = data.DataLoader(train_dataset, batch_size=self.batch, shuffle=False, num_workers=0,
+                                       drop_last=True)
         
         unique_classes = set()
         
@@ -76,14 +77,10 @@ class ProxyContrastiveReplay(ContinualLearner):
         #print(f"Number of unique classes: {len(unique_classes)}", unique_classes)'''
 
         device = "cuda"
-        Model_Carto = ResNet18()
+        Model_Carto = ResNet18(len(unique_classes))
         Model_Carto = Model_Carto.to(device)
-
-        Model_Carto = torch.nn.DataParallel(Model_Carto)
-        cudnn.benchmark = True
-        
         criterion_ = nn.CrossEntropyLoss()
-        optimizer_ = optim.SGD(Model_Carto.parameters(), lr=0.1,
+        optimizer_ = optim.SGD(Model_Carto.parameters(), lr=0.01,
                               momentum=0.9, weight_decay=5e-4)
         scheduler_ = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_, T_max=200)
         
@@ -146,14 +143,14 @@ class ProxyContrastiveReplay(ContinualLearner):
                 correct += predicted.eq(targets).sum().item()
         
 
-            print("Accuracy:", 100.*correct/total, ", and:", correct, "/", total, train_loss)
+            print("Accuracy:", 100.*correct/total, ", and:", correct, "/", total, " ,loss:", train_loss/(batch_idx+1))
             conf_tensor = torch.tensor(confidence_epoch)
             conf_tensor = conf_tensor.reshape(conf_tensor.shape[0]*conf_tensor.shape[1])
             conf_tensor = conf_tensor[:total]
             #print(conf_tensor.shape)
             
             Carto.append(conf_tensor.numpy())
-            #scheduler_.step()
+            scheduler_.step()
 
         Carto_tensor = torch.tensor(np.array(Carto))
         #print(Carto_tensor.shape)
@@ -176,38 +173,39 @@ class ProxyContrastiveReplay(ContinualLearner):
 
 
         # Number of top values you're interested in
-        top_n = (self.params.mem_size//(task_number+1)) + 1
-        
+        #top_n = (self.params.mem_size//(task_number+1)) + 1
+        top_n = self.params.mem_size
+
+
         # Find the indices that would sort the array
         sorted_indices_1 = np.argsort(Confidence_mean.numpy())
         sorted_indices_2 = np.argsort(Variability.numpy())
-
-
-
+        
         # Take the last 'top_n' indices (i.e., the top values)
-        top_indices_1 = sorted_indices_1[:int(0.9*top_n)]
-        top_indices_2 = sorted_indices_1[-int(0.05*top_n):]
-        top_indices_3 = sorted_indices_2[-(top_n - (int(0.9*top_n) + int(0.05*top_n))):]
+        #top_indices_1 = sorted_indices_1[:int(0.95*top_n)]
+        #top_indices_2 = sorted_indices_1[-int(0.025*top_n):]
+        #top_indices_3 = sorted_indices_2[-(top_n - (int(0.95*top_n) + int(0.025*top_n))):]
         
         #print("top_indicesssss", top_indices.shape, top_indices, type(top_indices))
 
-        top_indices_12 = np.concatenate((top_indices_3, top_indices_2))
-        top_indices_123 = np.concatenate((top_indices_12, top_indices_1))
+        #top_indices_12 = np.concatenate((top_indices_2, top_indices_3))
+        #top_indices_123 = np.concatenate((top_indices_12, top_indices_1))
         
-        # If you want these indices in ascending order, you can sort them
-        #top_indices_sorted = np.sort(top_indices_123)
-        top_indices_sorted = top_indices_123
+        #top_indices_sorted = top_indices_123
+        
 
-        
+    
         
         # Take the last 'top_n' indices (i.e., the top values)
-        ##top_indices_1 = sorted_indices_1[:top_n]
+        top_indices_1 = sorted_indices_1[:top_n]
         
         #top_indices_sorted = top_indices_1[::-1]
-        ##top_indices_sorted = top_indices_1
+        top_indices_sorted = top_indices_1
         
         #print("top_indices_sorted", top_indices_sorted, top_indices_sorted.shape)
         print("top_indices_sorted.shape", top_indices_sorted.shape)
+
+        
         
         subset_data = torch.utils.data.Subset(train_dataset, top_indices_sorted)
         #print("subset_dataaaaaaaa", subset_data)
@@ -230,26 +228,30 @@ class ProxyContrastiveReplay(ContinualLearner):
 
         #print("task_numberrrrrrrrrr", task_number)
 
-        if task_number > 0:
-    
-            space = self.params.mem_size
-            pointer = 0  # This will keep track of where to insert in M
-            
-            for j in range(task_number+1):  
-                portion = space // (task_number + 1 - j)  # Use integer division for portion size
-                
-                # Fill the buffer
-                for k in range(portion):
-                    if task_number != j:
-                        self.buffer.buffer_img[pointer] = self.buffer.buffer_img[j*self.params.mem_size//task_number + k]
-                        self.buffer.buffer_label[pointer] = self.buffer.buffer_label[j*self.params.mem_size//task_number + k]
-                        pointer += 1
-                    else:
-                        self.buffer.buffer_img[pointer] = all_images.to(device)[k]
-                        self.buffer.buffer_label[pointer] = all_labels.to(device)[k]
-                        pointer += 1
-                    
-                space -= portion
+
+##        if task_number > 0:
+##    
+##            space = self.params.mem_size
+##            pointer = 0  # This will keep track of where to insert in M
+##            
+##            for j in range(task_number+1):  
+##                portion = space // (task_number + 1 - j)  # Use integer division for portion size
+##                
+##                # Fill the buffer
+##                for k in range(portion):
+##                    if task_number != j:
+##                        self.buffer.buffer_img[pointer] = self.buffer.buffer_img[j*self.params.mem_size//task_number + k]
+##                        self.buffer.buffer_label[pointer] = self.buffer.buffer_label[j*self.params.mem_size//task_number + k]
+##                        pointer += 1
+##                    else:
+##                        self.buffer.buffer_img[pointer] = all_images.to(device)[k]
+##                        self.buffer.buffer_label[pointer] = all_labels.to(device)[k]
+##                        pointer += 1
+##                    
+##                space -= portion
+
+
+
 
 
         # set up model
@@ -305,19 +307,29 @@ class ProxyContrastiveReplay(ContinualLearner):
                     novel_loss.backward()
                     self.opt.step()
                 # update mem
-                if count_ == self.buffer.buffer_label.shape[0]:
-                    self.buffer.update(batch_x, batch_y)
+                self.buffer.update(batch_x, batch_y)
 
         #print("self.buffer.buffer_img", self.buffer.buffer_img.shape, type(self.buffer.buffer_img))
         #print("self.buffer.buffer_label", self.buffer.buffer_label.shape, type(self.buffer.buffer_label), self.buffer.buffer_label)
 
-        if count_ == self.buffer.buffer_label.shape[0]:
-            self.buffer.buffer_img = all_images.to(device)
-            self.buffer.buffer_label = all_labels.to(device)
+##        if count_ == self.buffer.buffer_label.shape[0]:
+##            self.buffer.buffer_img = all_images.to(device)
+##            self.buffer.buffer_label = all_labels.to(device)
 
         #print("self.buffer.buffer_img", self.buffer.buffer_img.shape, type(self.buffer.buffer_img))
         #print("self.buffer.buffer_label", self.buffer.buffer_label.shape, type(self.buffer.buffer_label), self.buffer.buffer_label)
-        
+
+
+        print("unique_classes", unique_classes)
+        counter = 0
+        for i in range(self.buffer.buffer_label.shape[0]):
+            if self.buffer.buffer_label[i].item() in unique_classes:
+                self.buffer.buffer_label[i] = all_labels.to(device)[counter]
+                self.buffer.buffer_img[i] = all_images.to(device)[counter]
+                counter +=1
+
+        print("counter", counter)
+
         unique_classes__ = set()
         unique_classes__.update(self.buffer.buffer_label.cpu().numpy())
 
