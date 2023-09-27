@@ -7,6 +7,21 @@ from utils.setup_elements import transforms_match, transforms_aug
 from utils.utils import maybe_cuda
 from utils.loss import SupConLoss
 
+import torch.nn as nn
+from models.resnet import ResNet18
+##from models import resnet1
+import numpy as np
+import torch.optim as optim
+import torch.nn as nn
+import matplotlib.pyplot as plt
+from torch.utils.data import ConcatDataset
+import random
+import torchvision.transforms as transforms
+import torchvision
+import math
+
+from torch.utils.data import Dataset
+import pickle
 
 class ProxyContrastiveReplay(ContinualLearner):
     """
@@ -25,6 +40,8 @@ class ProxyContrastiveReplay(ContinualLearner):
         self.mem_size = params.mem_size
         self.eps_mem_batch = params.eps_mem_batch
         self.mem_iters = params.mem_iters
+        
+        self.soft_ = nn.Softmax(dim=1)
 
     def train_learner(self, x_train, y_train):
         self.before_train(x_train, y_train)
@@ -32,6 +49,73 @@ class ProxyContrastiveReplay(ContinualLearner):
         train_dataset = dataset_transform(x_train, y_train, transform=transforms_match[self.data])
         train_loader = data.DataLoader(train_dataset, batch_size=self.batch, shuffle=True, num_workers=0,
                                        drop_last=True)
+        
+        
+        unique_classes = set()
+        for _, labels, indices_1 in train_loader:
+            unique_classes.update(labels.numpy())
+        
+
+        device = "cuda"
+        Model_Carto = ResNet18(len(unique_classes))
+        Model_Carto = Model_Carto.to(device)
+        criterion_ = nn.CrossEntropyLoss()
+        optimizer_ = optim.SGD(Model_Carto.parameters(), lr=0.1,
+                              momentum=0.9, weight_decay=5e-4)
+        scheduler_ = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_, T_max=200)
+        
+
+        mapping = {value: index for index, value in enumerate(unique_classes)}
+        
+        # Training
+        Carto = torch.zeros((6, len(y_train)))
+        for epoch_ in range(6):
+            print('\nEpoch: %d' % epoch_)
+            Model_Carto.train()
+            train_loss = 0
+            correct = 0
+            total = 0
+            confidence_epoch = []
+            for batch_idx, (inputs, targets, indices_1) in enumerate(train_loader):
+                inputs, targets = inputs.to(device), targets.to(device)                
+                targets = torch.tensor([mapping[val.item()] for val in targets]).to(device)
+                
+                optimizer_.zero_grad()
+                outputs = Model_Carto(inputs)
+                soft_ = self.soft_(outputs)
+                confidence_batch = []
+        
+                for i in range(targets.shape[0]):
+                  confidence_batch.append(soft_[i,targets[i]].item())
+                        
+                loss = criterion_(outputs, targets)
+                loss.backward()
+                optimizer_.step()
+        
+                train_loss += loss.item()
+                _, predicted = outputs.max(1)
+                total += targets.size(0)
+                correct += predicted.eq(targets).sum().item()
+        
+                conf_tensor = torch.tensor(confidence_batch)
+                Carto[epoch_, indices_1] = conf_tensor
+                
+            print("Accuracy:", 100.*correct/total, ", and:", correct, "/", total, " ,loss:", train_loss/(batch_idx+1))
+
+            scheduler_.step()
+
+
+        Confidence_mean = Carto.mean(dim=0)
+        Variability = Carto.std(dim=0)
+        
+        plt.scatter(Variability, Confidence_mean, s = 2)
+        
+        plt.xlabel("Variability") 
+        plt.ylabel("Confidence") 
+        
+        plt.savefig('scatter_plot.png')
+        
+        
         # set up model
         self.model = self.model.train()
         for ep in range(self.epoch):
@@ -87,4 +171,79 @@ class ProxyContrastiveReplay(ContinualLearner):
                 # update mem
                 self.buffer.update(batch_x, batch_y)
 
+
+
+        counter__ = 0
+        for i in range(self.buffer.buffer_label.shape[0]):
+            if self.buffer.buffer_label[i].item() in unique_classes:
+                counter__ +=1
+
+        top_n = counter__
+
+        # Find the indices that would sort the array
+        sorted_indices_1 = np.argsort(Confidence_mean.numpy())
+        sorted_indices_2 = np.argsort(Variability.numpy())
+        
+        #top_indices_1 = sorted_indices_1[:top_n] #hard to learn
+        #top_indices_sorted = top_indices_1 #hard to learn
+        
+        #top_indices_1 = sorted_indices_1[-top_n:] #easy to learn
+        #top_indices_sorted = top_indices_1[::-1] #easy to learn
+        
+        top_indices_1 = sorted_indices_2[-top_n:] #ambigiuous
+        top_indices_sorted = top_indices_1[::-1] #ambiguous
+
+
+        ##top_indices_sorted = sorted_indices_1
+        ##top_indices_sorted = sorted_indices_1[::-1]
+
+        
+        subset_data = torch.utils.data.Subset(train_dataset, top_indices_sorted)
+        trainloader_C = torch.utils.data.DataLoader(subset_data, batch_size=self.batch, shuffle=True, num_workers=0)
+
+        images_list = []
+        labels_list = []
+        
+        for images, labels, indices_1 in trainloader_C:  # Assuming train_loader is your DataLoader
+            images_list.append(images)
+            labels_list.append(labels)
+        
+        all_images = torch.cat(images_list, dim=0)
+        all_labels = torch.cat(labels_list, dim=0)
+
+
+        '''num_per_class = top_n//len(unique_classes)
+        counter_class = [0 for _ in range(len(unique_classes))]
+        full = [math.ceil(top_n/len(unique_classes)) for _ in range(len(unique_classes))]
+
+        images_list_ = []
+        labels_list_ = []
+        
+        for i in range(all_labels.shape[0]):
+            if counter_class[mapping[all_labels[i].item()]] < (num_per_class + 1):
+                counter_class[mapping[all_labels[i].item()]] += 1
+                labels_list_.append(all_labels[i])
+                images_list_.append(all_images[i])
+            if counter_class == full:
+                print("yessssss")
+                break
+
+        print("counter_class", counter_class)
+        print("full", full)
+        all_images_ = torch.stack(images_list_)
+        all_labels_ = torch.stack(labels_list_)
+        #print("all_images_.shapeall_images_.shape",all_images_.shape)
+        print("all_labels_.shapeeee",all_labels_.shape)'''
+
+        
+        counter = 0
+        for i in range(self.buffer.buffer_label.shape[0]):
+            if self.buffer.buffer_label[i].item() in unique_classes:
+                self.buffer.buffer_label[i] = all_labels.to(device)[counter]
+                self.buffer.buffer_img[i] = all_images.to(device)[counter]
+                counter +=1
+
+        print("counter", counter)
+
+        
         self.after_train()
