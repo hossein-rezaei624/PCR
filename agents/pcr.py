@@ -184,11 +184,11 @@ class ProxyContrastiveReplay(ContinualLearner):
         sorted_indices_1 = np.argsort(Confidence_mean.numpy())
         sorted_indices_2 = np.argsort(Variability.numpy())
         
-        top_indices_1 = sorted_indices_1[:top_n] #hard to learn
-        top_indices_sorted = top_indices_1 #hard to learn
+        #top_indices_1 = sorted_indices_1[:top_n] #hard to learn
+        #top_indices_sorted = top_indices_1 #hard to learn
         
-        #top_indices_1 = sorted_indices_1[-top_n:] #easy to learn
-        #top_indices_sorted = top_indices_1[::-1] #easy to learn
+        top_indices_1 = sorted_indices_1[-top_n:] #easy to learn
+        top_indices_sorted = top_indices_1[::-1] #easy to learn
         
         #top_indices_1 = sorted_indices_2[-top_n:] #ambigiuous
         #top_indices_sorted = top_indices_1[::-1] #ambiguous
