@@ -114,6 +114,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         plt.ylabel("Confidence") 
         
         plt.savefig('scatter_plot.png')
+
         
         
         # set up model
@@ -190,16 +191,19 @@ class ProxyContrastiveReplay(ContinualLearner):
         #top_indices_1 = sorted_indices_1[-top_n:] #easy to learn
         #top_indices_sorted = top_indices_1[::-1] #easy to learn
         
-        top_indices_1 = sorted_indices_2[-top_n:] #ambigiuous
-        top_indices_sorted = top_indices_1[::-1] #ambiguous
+        #top_indices_1 = sorted_indices_2[-top_n:] #ambigiuous
+        #top_indices_sorted = top_indices_1[::-1] #ambiguous
 
 
-        ##top_indices_sorted = sorted_indices_1
-        ##top_indices_sorted = sorted_indices_1[::-1]
+        top_indices_sorted = sorted_indices_1 #hard to learn
+        
+        ##top_indices_sorted = sorted_indices_1[::-1] #easy to learn
+
+        ##top_indices_sorted = sorted_indices_2[::-1] #ambiguous
 
         
         subset_data = torch.utils.data.Subset(train_dataset, top_indices_sorted)
-        trainloader_C = torch.utils.data.DataLoader(subset_data, batch_size=self.batch, shuffle=True, num_workers=0)
+        trainloader_C = torch.utils.data.DataLoader(subset_data, batch_size=self.batch, shuffle=False, num_workers=0)
 
         images_list = []
         labels_list = []
@@ -212,38 +216,45 @@ class ProxyContrastiveReplay(ContinualLearner):
         all_labels = torch.cat(labels_list, dim=0)
 
 
-        '''num_per_class = top_n//len(unique_classes)
+        ##print("top_n", top_n)
+        
+        num_per_class = top_n//len(unique_classes)
         counter_class = [0 for _ in range(len(unique_classes))]
-        full = [math.ceil(top_n/len(unique_classes)) for _ in range(len(unique_classes))]
+        condition = [num_per_class for _ in range(len(unique_classes))]
+        diff = top_n - num_per_class*len(unique_classes)
+        for o in range(diff):
+            condition[o] += 1
+
 
         images_list_ = []
         labels_list_ = []
         
         for i in range(all_labels.shape[0]):
-            if counter_class[mapping[all_labels[i].item()]] < (num_per_class + 1):
+            if counter_class[mapping[all_labels[i].item()]] < condition[mapping[all_labels[i].item()]]:
                 counter_class[mapping[all_labels[i].item()]] += 1
                 labels_list_.append(all_labels[i])
                 images_list_.append(all_images[i])
-            if counter_class == full:
-                print("yessssss")
+            if counter_class == condition:
+                ##print("yesssss")
                 break
 
-        print("counter_class", counter_class)
-        print("full", full)
         all_images_ = torch.stack(images_list_)
         all_labels_ = torch.stack(labels_list_)
-        #print("all_images_.shapeall_images_.shape",all_images_.shape)
-        print("all_labels_.shapeeee",all_labels_.shape)'''
 
+
+        indices = torch.randperm(all_images_.size(0))
+        shuffled_images = all_images_[indices]
+        shuffled_labels = all_labels_[indices]
+        ##print("shuffled_labels.shape", shuffled_labels.shape)
         
         counter = 0
         for i in range(self.buffer.buffer_label.shape[0]):
             if self.buffer.buffer_label[i].item() in unique_classes:
-                self.buffer.buffer_label[i] = all_labels.to(device)[counter]
-                self.buffer.buffer_img[i] = all_images.to(device)[counter]
+                self.buffer.buffer_label[i] = shuffled_labels.to(device)[counter]
+                self.buffer.buffer_img[i] = shuffled_images.to(device)[counter]
                 counter +=1
 
-        print("counter", counter)
+        ##print("counter", counter)
 
         
         self.after_train()
