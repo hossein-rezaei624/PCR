@@ -306,16 +306,16 @@ class ProxyContrastiveReplay(ContinualLearner):
 
 
         check_bound = len(y_train)/len(unique_classes)
-        print("check_bound", check_bound)
-        print("condition", condition, sum(condition))
+        ##print("check_bound", check_bound)
+        ##print("condition", condition, sum(condition))
         for i in range(len(condition)):
             if condition[i] > check_bound:
-                print("iiiiiiiii", i)
+                ##print("iiiiiiiii", i)
                 condition = self.distribute_excess(condition)
                 break
 
         
-        print("condition", condition, sum(condition), "top_n", top_n)
+        ##print("condition", condition, sum(condition), "top_n", top_n)
         images_list_ = []
         labels_list_ = []
         
@@ -325,7 +325,7 @@ class ProxyContrastiveReplay(ContinualLearner):
                 labels_list_.append(all_labels[i])
                 images_list_.append(all_images[i])
             if counter_class == condition:
-                print("yesssss")
+                ##print("yesssss")
                 break
 
         
@@ -335,7 +335,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         indices = torch.randperm(all_images_.size(0))
         shuffled_images = all_images_[indices]
         shuffled_labels = all_labels_[indices]
-        print("shuffled_labels.shape", shuffled_labels.shape)
+        ##print("shuffled_labels.shape", shuffled_labels.shape)
         
         counter = 0
         for i in range(self.buffer.buffer_label.shape[0]):
