@@ -67,6 +67,37 @@ class ProxyContrastiveReplay(ContinualLearner):
 
         return samples
 
+
+    def distribute_excess(lst):
+        # Calculate the total excess value
+        total_excess = sum(val - 500 for val in lst if val > 500)
+    
+        # Number of elements that are not greater than 500
+        recipients = [i for i, val in enumerate(lst) if val < 500]
+    
+        num_recipients = len(recipients)
+    
+        # Calculate the average share and remainder
+        avg_share, remainder = divmod(total_excess, num_recipients)
+    
+        lst = [val if val <= 500 else 500 for val in lst]
+        
+        # Distribute the average share
+        for idx in recipients:
+            lst[idx] += avg_share
+        
+        # Distribute the remainder
+        for idx in recipients[:remainder]:
+            lst[idx] += 1
+        
+        # Cap values greater than 500
+        for i, val in enumerate(lst):
+            if val > 500:
+                return distribute_excess(lst)
+                break
+    
+        return lst
+    
     
     def train_learner(self, x_train, y_train):
         self.before_train(x_train, y_train)
@@ -272,6 +303,16 @@ class ProxyContrastiveReplay(ContinualLearner):
                 condition[o] += 1
         else:
             condition = [value for k, value in dist.items()]
+
+
+        check_bound = len(y_train)/len(unique_classes)
+        print("check_bound", check_bound)
+        print("condition", condition, sum(condition))
+        for i in range(len(condition)):
+            if condition[i] > check_bound:
+                condition = distribute_excess(condition)
+                break
+
         
         print("condition", condition, sum(condition), "top_n", top_n)
         images_list_ = []
