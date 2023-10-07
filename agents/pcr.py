@@ -310,6 +310,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         print("condition", condition, sum(condition))
         for i in range(len(condition)):
             if condition[i] > check_bound:
+                print("iiiiiiiii", i)
                 condition = distribute_excess(condition)
                 break
 
