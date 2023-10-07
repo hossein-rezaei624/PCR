@@ -273,7 +273,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         else:
             condition = [value for k, value in dist.items()]
         
-        print("condition", condition, sum(condition))
+        print("condition", condition, sum(condition), "top_n", top_n)
         images_list_ = []
         labels_list_ = []
         
