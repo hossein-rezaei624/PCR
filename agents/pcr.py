@@ -68,7 +68,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         return samples
 
 
-    def distribute_excess(lst):
+    def distribute_excess(self, lst):
         # Calculate the total excess value
         total_excess = sum(val - 500 for val in lst if val > 500)
     
@@ -311,7 +311,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         for i in range(len(condition)):
             if condition[i] > check_bound:
                 print("iiiiiiiii", i)
-                condition = distribute_excess(condition)
+                condition = self.distribute_excess(condition)
                 break
 
         
