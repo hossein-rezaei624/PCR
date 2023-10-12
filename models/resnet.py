@@ -97,7 +97,7 @@ class ResNet(nn.Module):
         self.layer3 = self._make_layer(block, nf * 4, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, nf * 8, num_blocks[3], stride=2)
         self.linear = nn.Linear(nf * 8 * block.expansion, num_classes, bias=bias)
-        self.pcrLinear = cosLinear(nf * 32 * block.expansion, num_classes)
+        self.pcrLinear = cosLinear(nf * 8 * block.expansion, num_classes)
 
 
     def _make_layer(self, block, planes, num_blocks, stride):
