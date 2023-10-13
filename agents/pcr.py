@@ -1,4 +1,4 @@
-import torch
+import torch ## our final approach fourth
 from torch.utils import data
 from utils.buffer.buffer import Buffer
 from agents.base import ContinualLearner
@@ -11,7 +11,6 @@ import torch.nn as nn
 from models.resnet import ResNet18
 import numpy as np
 import torch.optim as optim
-import torch.nn as nn
 import matplotlib.pyplot as plt
 from torch.utils.data import ConcatDataset
 import random
@@ -177,12 +176,12 @@ class ProxyContrastiveReplay(ContinualLearner):
         Confidence_mean = Carto.mean(dim=0)
         Variability = Carto.std(dim=0)
         
-        plt.scatter(Variability, Confidence_mean, s = 2)
+        ##plt.scatter(Variability, Confidence_mean, s = 2)
         
-        plt.xlabel("Variability") 
-        plt.ylabel("Confidence") 
+        ##plt.xlabel("Variability") 
+        ##plt.ylabel("Confidence") 
         
-        plt.savefig('scatter_plot.png')
+        ##plt.savefig('scatter_plot.png')
 
        
         
