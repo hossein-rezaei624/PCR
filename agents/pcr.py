@@ -106,11 +106,11 @@ class ProxyContrastiveReplay(ContinualLearner):
         train_loader = data.DataLoader(train_dataset, batch_size=self.batch, shuffle=True, num_workers=0,
                                        drop_last=True)
         
-        
+        print("111111111111111")
         unique_classes = set()
         for _, labels, indices_1 in train_loader:
             unique_classes.update(labels.numpy())
-        
+        print("222222222222222")
 
         device = "cuda"
         Model_Carto = ResNet18(len(unique_classes))
