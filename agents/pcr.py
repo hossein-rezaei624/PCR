@@ -8,7 +8,7 @@ from utils.utils import maybe_cuda
 from utils.loss import SupConLoss
 
 import torch.nn as nn
-from models.resnet import Reduced_ResNet18
+from models.resnet import ResNet18
 import numpy as np
 import torch.optim as optim
 import matplotlib.pyplot as plt
@@ -111,7 +111,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         
 
         device = "cuda"
-        Model_Carto = Reduced_ResNet18(len(unique_classes))
+        Model_Carto = ResNet18(len(unique_classes))
         Model_Carto = Model_Carto.to(device)
         criterion_ = nn.CrossEntropyLoss()
         optimizer_ = optim.SGD(Model_Carto.parameters(), lr=0.1,
