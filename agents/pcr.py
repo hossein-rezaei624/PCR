@@ -1,4 +1,4 @@
-import torch # without same number of classes (final).
+import torch # without same number of classes (final) + second.
 from torch.utils import data
 from utils.buffer.buffer import Buffer
 from agents.base import ContinualLearner
@@ -11,7 +11,6 @@ import torch.nn as nn
 from models.resnet import ResNet18
 import numpy as np
 import torch.optim as optim
-import torch.nn as nn
 import matplotlib.pyplot as plt
 from torch.utils.data import ConcatDataset
 import random
@@ -192,10 +191,6 @@ class ProxyContrastiveReplay(ContinualLearner):
         
         top_indices_1 = sorted_indices_2[-top_n:] #ambigiuous
         top_indices_sorted = top_indices_1[::-1] #ambiguous
-
-
-        ##top_indices_sorted = sorted_indices_1
-        ##top_indices_sorted = sorted_indices_1[::-1]
 
         
         subset_data = torch.utils.data.Subset(train_dataset, top_indices_sorted)
