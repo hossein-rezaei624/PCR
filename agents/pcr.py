@@ -289,7 +289,7 @@ class ProxyContrastiveReplay(ContinualLearner):
 
             indices = torch.FloatTensor(len(class_samples)).uniform_(0, len(class_samples)).long()
             sampled_for_this_class = [class_samples[i] for i in indices[:num_samples]]
-            sampled_indices.extend(sampled_for_this_class)
+            selected_indices.extend(sampled_for_this_class)
 
         
 
