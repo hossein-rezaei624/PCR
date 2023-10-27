@@ -278,6 +278,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         class_indices = defaultdict(list)
         for idx, (_, label, __) in enumerate(train_dataset):
             class_indices[label.item()].append(idx)
+            print("class_indices", class_indices)
 
         selected_indices = []
 
@@ -285,6 +286,7 @@ class ProxyContrastiveReplay(ContinualLearner):
             class_samples = class_indices[reverse_mapping[class_id]]  # get indices for the class
             selected_for_class = random.sample(class_samples, num_samples)
             selected_indices.extend(selected_for_class)
+            print("selected_indices", selected_indices)
 
         selected_dataset = Subset(train_dataset, selected_indices)
         trainloader_C = torch.utils.data.DataLoader(selected_dataset, batch_size=self.batch, shuffle=True, num_workers=0)
