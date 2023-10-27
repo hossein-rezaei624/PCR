@@ -283,8 +283,15 @@ class ProxyContrastiveReplay(ContinualLearner):
 
         for class_id, num_samples in enumerate(condition):
             class_samples = class_indices[reverse_mapping[class_id]]  # get indices for the class
-            selected_for_class = random.sample(class_samples, num_samples)
-            selected_indices.extend(selected_for_class)
+            ##selected_for_class = random.sample(class_samples, num_samples)
+            ##selected_indices.extend(selected_for_class)
+
+
+            indices = torch.FloatTensor(len(class_samples)).uniform_(0, len(class_samples)).long()
+            sampled_for_this_class = [class_samples[i] for i in indices[:num_samples]]
+            sampled_indices.extend(sampled_for_this_class)
+
+        
 
         selected_dataset = Subset(train_dataset, selected_indices)
         trainloader_C = torch.utils.data.DataLoader(selected_dataset, batch_size=self.batch, shuffle=True, num_workers=0)
