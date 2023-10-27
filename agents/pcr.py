@@ -272,13 +272,13 @@ class ProxyContrastiveReplay(ContinualLearner):
                 condition = self.distribute_excess(condition)
                 break
 
+        
         #here
 
         class_indices = defaultdict(list)
         for idx, (_, label, __) in enumerate(train_dataset):
             class_indices[label.item()].append(idx)
 
-        
         selected_indices = []
 
         for class_id, num_samples in enumerate(condition):
@@ -289,15 +289,6 @@ class ProxyContrastiveReplay(ContinualLearner):
         selected_dataset = Subset(train_dataset, selected_indices)
         trainloader_C = torch.utils.data.DataLoader(selected_dataset, batch_size=self.batch, shuffle=True, num_workers=0)
 
-
-        list_20 = [0 for i in range(10)]
-        print("mapping", mapping)
-        for i, (imgg, labell, idxxx) in enumerate(selected_dataset):
-            print("labell", labell)
-            list_20[mapping[labell.item()]] += 1
-        print("condition", condition)
-        print("list_20", list_20)
-        
         images_list = []
         labels_list = []
         
@@ -307,8 +298,6 @@ class ProxyContrastiveReplay(ContinualLearner):
         
         all_images = torch.cat(images_list, dim=0)
         all_labels = torch.cat(labels_list, dim=0)
-        print("top_n", top_n, len(list_of_indices))
-        print("all_images.shape", all_images.shape)
 
         self.buffer.buffer_label[list_of_indices] = all_labels.to(device)
         self.buffer.buffer_img[list_of_indices] = all_images.to(device)
