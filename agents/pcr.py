@@ -275,14 +275,14 @@ class ProxyContrastiveReplay(ContinualLearner):
         #here
 
         class_indices = defaultdict(list)
-        for idx, (_, label) in enumerate(train_dataset):
+        for idx, (_, label, __) in enumerate(train_dataset):
             class_indices[label.item()].append(idx)
 
         
         selected_indices = []
 
         for class_id, num_samples in enumerate(condition):
-            class_samples = class_indices[mapping[class_id]]  # get indices for the class
+            class_samples = class_indices[reverse_mapping[class_id]]  # get indices for the class
             selected_for_class = random.sample(class_samples, num_samples)
             selected_indices.extend(selected_for_class)
 
