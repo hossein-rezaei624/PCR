@@ -1,4 +1,4 @@
-import torch # without same number of classes (final) + second.
+import torch ## with same number of classes
 from torch.utils import data
 from utils.buffer.buffer import Buffer
 from agents.base import ContinualLearner
@@ -66,8 +66,8 @@ class ProxyContrastiveReplay(ContinualLearner):
         mapping = {value: index for index, value in enumerate(unique_classes)}
         
         # Training
-        Carto = torch.zeros((4, len(y_train)))
-        for epoch_ in range(4):
+        Carto = torch.zeros((6, len(y_train)))
+        for epoch_ in range(6):
             print('\nEpoch: %d' % epoch_)
             Model_Carto.train()
             train_loss = 0
@@ -106,12 +106,13 @@ class ProxyContrastiveReplay(ContinualLearner):
         Confidence_mean = Carto.mean(dim=0)
         Variability = Carto.std(dim=0)
         
-        #plt.scatter(Variability, Confidence_mean, s = 2)
+        ##plt.scatter(Variability, Confidence_mean, s = 2)
         
-        #plt.xlabel("Variability") 
-        #plt.ylabel("Confidence") 
+        ##plt.xlabel("Variability") 
+        ##plt.ylabel("Confidence") 
         
-        #plt.savefig('scatter_plot.png')
+        ##plt.savefig('scatter_plot.png')
+
         
         
         # set up model
@@ -189,12 +190,19 @@ class ProxyContrastiveReplay(ContinualLearner):
         #top_indices_1 = sorted_indices_1[-top_n:] #easy to learn
         #top_indices_sorted = top_indices_1[::-1] #easy to learn
         
-        top_indices_1 = sorted_indices_2[-top_n:] #ambigiuous
-        top_indices_sorted = top_indices_1[::-1] #ambiguous
+        #top_indices_1 = sorted_indices_2[-top_n:] #ambigiuous
+        #top_indices_sorted = top_indices_1[::-1] #ambiguous
+
+
+        ##top_indices_sorted = sorted_indices_1 #hard to learn
+        
+        ##top_indices_sorted = sorted_indices_1[::-1] #easy to learn
+
+        top_indices_sorted = sorted_indices_2[::-1] #ambiguous
 
         
         subset_data = torch.utils.data.Subset(train_dataset, top_indices_sorted)
-        trainloader_C = torch.utils.data.DataLoader(subset_data, batch_size=self.batch, shuffle=True, num_workers=0)
+        trainloader_C = torch.utils.data.DataLoader(subset_data, batch_size=self.batch, shuffle=False, num_workers=0)
 
         images_list = []
         labels_list = []
@@ -207,8 +215,40 @@ class ProxyContrastiveReplay(ContinualLearner):
         all_labels = torch.cat(labels_list, dim=0)
 
 
-        self.buffer.buffer_label[list_of_indices] = all_labels.to(device)
-        self.buffer.buffer_img[list_of_indices] = all_images.to(device)
+        ##print("top_n", top_n)
+        
+        num_per_class = top_n//len(unique_classes)
+        counter_class = [0 for _ in range(len(unique_classes))]
+        condition = [num_per_class for _ in range(len(unique_classes))]
+        diff = top_n - num_per_class*len(unique_classes)
+        for o in range(diff):
+            condition[o] += 1
 
+
+        images_list_ = []
+        labels_list_ = []
+        
+        for i in range(all_labels.shape[0]):
+            if counter_class[mapping[all_labels[i].item()]] < condition[mapping[all_labels[i].item()]]:
+                counter_class[mapping[all_labels[i].item()]] += 1
+                labels_list_.append(all_labels[i])
+                images_list_.append(all_images[i])
+            if counter_class == condition:
+                ##print("yesssss")
+                break
+
+        all_images_ = torch.stack(images_list_)
+        all_labels_ = torch.stack(labels_list_)
+
+
+        indices = torch.randperm(all_images_.size(0))
+        shuffled_images = all_images_[indices]
+        shuffled_labels = all_labels_[indices]
+        ##print("shuffled_labels.shape", shuffled_labels.shape)
+        
+
+        self.buffer.buffer_label[list_of_indices] = shuffled_labels.to(device)
+        self.buffer.buffer_img[list_of_indices] = shuffled_images.to(device)
         
         self.after_train()
+
