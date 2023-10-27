@@ -289,6 +289,14 @@ class ProxyContrastiveReplay(ContinualLearner):
         selected_dataset = Subset(train_dataset, selected_indices)
         trainloader_C = torch.utils.data.DataLoader(selected_dataset, batch_size=self.batch, shuffle=True, num_workers=0)
 
+
+        list_20 = [0 for i in range(10)]
+
+        for i, imgg, labell, idxxx in enumerate(selected_dataset):
+            list_20[labell] += 1
+        print("condition", condition)
+        print("list_20", list_20)
+        
         images_list = []
         labels_list = []
         
