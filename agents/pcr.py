@@ -292,7 +292,7 @@ class ProxyContrastiveReplay(ContinualLearner):
 
         list_20 = [0 for i in range(10)]
 
-        for i, imgg, labell, idxxx in enumerate(selected_dataset):
+        for I, (imgg, labell, idxxx) in enumerate(selected_dataset):
             list_20[labell] += 1
         print("condition", condition)
         print("list_20", list_20)
