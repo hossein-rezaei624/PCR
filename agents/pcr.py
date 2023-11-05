@@ -66,8 +66,8 @@ class ProxyContrastiveReplay(ContinualLearner):
         mapping = {value: index for index, value in enumerate(unique_classes)}
         
         # Training
-        Carto = torch.zeros((6, len(y_train)))
-        for epoch_ in range(6):
+        Carto = torch.zeros((8, len(y_train)))
+        for epoch_ in range(8):
             print('\nEpoch: %d' % epoch_)
             Model_Carto.train()
             train_loss = 0
