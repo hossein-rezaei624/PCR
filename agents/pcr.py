@@ -277,8 +277,8 @@ class ProxyContrastiveReplay(ContinualLearner):
         
         
         # Extract the first 10 images
-        images = [subset_data[i][0] for i in range(15)]
-        labels = [subset_data[i][1] for i in range(15)]
+        images = [subset_data[i][0] for i in range(225)]
+        labels = [subset_data[i][1] for i in range(225)]
         
         # Make a grid from these images
         grid = torchvision.utils.make_grid(images, nrow=15)  # 5 images per row
