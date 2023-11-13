@@ -10,6 +10,8 @@ import copy
 from utils.loss import SupConLoss
 import pickle
 
+from collections import defaultdict
+
 
 class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
     '''
@@ -151,6 +153,13 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
                 old_class_score = AverageMeter()
                 correct_lb = []
                 predict_lb = []
+            
+            
+            num_classes = 10
+            
+            class_correct = defaultdict(int)  # Dictionary to store correct counts per class
+            class_total = defaultdict(int)
+            
             for task, test_loader in enumerate(test_loaders):
                 acc = AverageMeter()
                 for i, (batch_x, batch_y) in enumerate(test_loader):
@@ -181,6 +190,17 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
                         # logits = logits.masked_fill(mask == 0, -1e9)
                         _, pred_label = torch.max(logits, 1)
                         correct_cnt = (pred_label == batch_y).sum().item() / batch_y.size(0)
+
+
+                        correct = (pred_label == batch_y)
+
+
+                        for label, is_correct in zip(batch_y, correct):
+                            class_total[label.item()] += 1
+                            if is_correct.item():
+                                class_correct[label.item()] += 1
+
+                    
                     else:
                         logits = self.model.forward(batch_x)
                         _, pred_label = torch.max(logits, 1)
@@ -212,6 +232,17 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
                             pass
                     acc.update(correct_cnt, batch_y.size(0))
                 acc_array[task] = acc.avg()
+        
+        
+        # Print the accuracy for each class
+        for class_id in range(num_classes):
+            if class_total[class_id] > 0:
+                accuracy = 100 * class_correct[class_id] / class_total[class_id]
+                print(f"Accuracy of class {class_id}: {accuracy:.2f}%")
+            else:
+                print(f"Class {class_id} has no examples in the test set.")
+        
+        
         print(acc_array)
         if self.params.error_analysis:
             self.error_list.append((no, nn, oo, on))
