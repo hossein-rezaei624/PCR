@@ -235,7 +235,7 @@ class ContinualLearner(torch.nn.Module, metaclass=abc.ABCMeta):
         
         
         # Print the accuracy for each class
-        for class_id in range(num_classes):
+        for class_id in [49, 45, 14, 76, 73, 36, 21, 24, 84, 13]:
             if class_total[class_id] > 0:
                 accuracy = 100 * class_correct[class_id] / class_total[class_id]
                 print(f"Accuracy of class {class_id}: {accuracy:.2f}%")
