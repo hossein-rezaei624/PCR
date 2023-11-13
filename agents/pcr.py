@@ -138,7 +138,7 @@ class ProxyContrastiveReplay(ContinualLearner):
             confidence_epoch = []
             for batch_idx, (inputs, targets, indices_1) in enumerate(train_loader):
                 inputs, targets = inputs.to(device), targets.to(device)                
-                targets = torch.tensor([mapping[val.item()] for val in targets]).to(device)
+                ##targets = torch.tensor([mapping[val.item()] for val in targets]).to(device)
                 
                 optimizer_.zero_grad()
                 outputs = Model_Carto(inputs)
