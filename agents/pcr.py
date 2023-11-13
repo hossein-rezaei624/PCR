@@ -59,7 +59,7 @@ class ProxyContrastiveReplay(ContinualLearner):
             if discrepancy > 0:
                 samples[key] += 1
                 discrepancy -= 1
-            elif discrepancy < 0 and samples[key] > 0:
+            else:
                 samples[key] -= 1
                 discrepancy += 1
 
@@ -91,7 +91,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         # Cap values greater than 500
         for i, val in enumerate(lst):
             if val > 500:
-                return self.distribute_excess(lst)
+                return distribute_excess(lst)
                 break
     
         return lst
@@ -171,7 +171,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         mean_by_class = {class_id: {epoch: torch.mean(torch.tensor(confidences[epoch])) for epoch in confidences} for class_id, confidences in confidence_by_class.items()}
         std_of_means_by_class = {class_id: torch.std(torch.tensor([mean_by_class[class_id][epoch] for epoch in range(8)])) for class_id, __ in enumerate(unique_classes)}
         
-        ##print("std_of_means_by_class", std_of_means_by_class)
+        print("std_of_means_by_class", std_of_means_by_class)
 
         Confidence_mean = Carto.mean(dim=0)
         Variability = Carto.std(dim=0)
@@ -266,30 +266,14 @@ class ProxyContrastiveReplay(ContinualLearner):
 
         ##top_indices_sorted = sorted_indices_1 #hard to learn
         
-        top_indices_sorted = sorted_indices_1[::-1] #easy to learn
+        ##top_indices_sorted = sorted_indices_1[::-1] #easy to learn
 
-        ##top_indices_sorted = sorted_indices_2[::-1] #ambiguous
+        top_indices_sorted = sorted_indices_2[::-1] #ambiguous
 
         
         subset_data = torch.utils.data.Subset(train_dataset, top_indices_sorted)
         trainloader_C = torch.utils.data.DataLoader(subset_data, batch_size=self.batch, shuffle=False, num_workers=0)
 
-        
-        
-        # Extract the first 10 images
-        images = [subset_data[i][0] for i in range(225)]
-        labels = [subset_data[i][1] for i in range(225)]
-        
-        # Make a grid from these images
-        grid = torchvision.utils.make_grid(images, nrow=15)  # 5 images per row
-        
-        torchvision.utils.save_image(grid, 'grid_image.png')
-        
-        
-        
-        
-        
-        
         images_list = []
         labels_list = []
         
