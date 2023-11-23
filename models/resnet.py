@@ -8,6 +8,10 @@ import torch.nn as nn
 from torch.nn.functional import relu, avg_pool2d
 from torch.autograd import Variable
 import torch
+
+import numpy as np
+
+
 def conv3x3(in_planes, out_planes, stride=1):
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
                      padding=1, bias=False)
