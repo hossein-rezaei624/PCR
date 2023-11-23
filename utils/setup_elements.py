@@ -43,9 +43,44 @@ transforms_match = {
 }
 
 
-
-
-
+transforms_aug = {
+    'cifar100': transforms.Compose([
+        transforms.ToPILImage(),
+        # transforms.RandomCrop(32, padding=4),
+        transforms.RandomResizedCrop(size=32, scale=(0.2, 1.)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomApply([
+            transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
+        ], p=0.8),
+        transforms.RandomGrayscale(p=0.2),
+        transforms.ToTensor(),
+        # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2615))
+        ]),
+    'cifar10': transforms.Compose([
+        transforms.ToPILImage(),
+        # transforms.RandomCrop(32, padding=4),
+        transforms.RandomResizedCrop(size=32, scale=(0.2, 1.)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomApply([
+            transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
+        ], p=0.8),
+        transforms.RandomGrayscale(p=0.2),
+        transforms.ToTensor(),
+        # transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2615))
+        ]),
+    'mini_imagenet': transforms.Compose([
+        transforms.ToPILImage(),
+        # transforms.RandomCrop(32, padding=4),
+        transforms.RandomResizedCrop(size=84, scale=(0.2, 1.)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomApply([
+            transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
+        ], p=0.8),
+        transforms.RandomGrayscale(p=0.2),
+        transforms.ToTensor(),
+        # transforms.Normalize((0.4802, 0.4480, 0.3975), (0.2770, 0.2691, 0.2821))
+        ])
+}
 
 
 
@@ -59,7 +94,7 @@ def setup_architecture(params):
         from models.ndpm.ndpm import Ndpm
         return Ndpm(params)
     if params.data == 'cifar100':
-        return Reduced_ResNet18(nclass)
+        return Reduced_ResNet18(nclass, params.agent)
     elif params.data == 'cifar10':
         return Reduced_ResNet18(nclass)
     elif params.data == 'core50':
