@@ -1,4 +1,4 @@
-'''import torch
+import torch
 from torch.utils import data
 from utils.buffer.buffer import Buffer
 from agents.base import ContinualLearner
@@ -87,4 +87,4 @@ class ProxyContrastiveReplay(ContinualLearner):
                 # update mem
                 self.buffer.update(batch_x, batch_y)
 
-        self.after_train()'''
+        self.after_train()
