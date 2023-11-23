@@ -102,14 +102,10 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, nf * 8, num_blocks[3], stride=2)
         self.linear = nn.Linear(nf * 8 * block.expansion, num_classes, bias=bias)
 
-        np_seed_state = np.random.get_state()
-        torch_seed_state = torch.get_rng_state()
 
       
-        self.pcrLinear = cosLinear(nf * 8 * block.expansion, num_classes)
+        #self.pcrLinear = cosLinear(nf * 8 * block.expansion, num_classes)
 
-        np.random.set_state(np_seed_state)
-        torch.set_rng_state(torch_seed_state)
 
 
     def _make_layer(self, block, planes, num_blocks, stride):
@@ -143,7 +139,7 @@ class ResNet(nn.Module):
 
     def pcrForward(self, x):
         out = self.features(x)
-        logits = self.pcrLinear(out)
+        logits = cosLinear(nf * 8 * block.expansion, num_classes)(out)
         return logits, out
 
 
