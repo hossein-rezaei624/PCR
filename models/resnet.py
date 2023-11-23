@@ -91,7 +91,7 @@ class cosLinear(nn.Module):
         return scores
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes, nf, bias):
+    def __init__(self, block, num_blocks, num_classes, agent_name, nf, bias):
         super(ResNet, self).__init__()
         self.in_planes = nf
         self.conv1 = conv3x3(3, nf * 1)
@@ -102,10 +102,8 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, nf * 8, num_blocks[3], stride=2)
         self.linear = nn.Linear(nf * 8 * block.expansion, num_classes, bias=bias)
 
-
-      
-        #self.pcrLinear = cosLinear(nf * 8 * block.expansion, num_classes)
-
+        if agent_name == 'PCR':
+          self.pcrLinear = cosLinear(nf * 8 * block.expansion, num_classes)
 
 
     def _make_layer(self, block, planes, num_blocks, stride):
@@ -139,15 +137,15 @@ class ResNet(nn.Module):
 
     def pcrForward(self, x):
         out = self.features(x)
-        logits = cosLinear(nf * 8 * block.expansion, num_classes)(out)
+        logits = self.pcrLinear(out)
         return logits, out
 
 
-def Reduced_ResNet18(nclasses, nf=20, bias=True):
+def Reduced_ResNet18(nclasses, agent_name, nf=20, bias=True):
     """
     Reduced ResNet18 as in GEM MIR(note that nf=20).
     """
-    return ResNet(BasicBlock, [2, 2, 2, 2], nclasses, nf, bias)
+    return ResNet(BasicBlock, [2, 2, 2, 2], nclasses, agent_name, nf, bias)
 
 def ResNet18(nclasses, nf=64, bias=True):
     return ResNet(BasicBlock, [2, 2, 2, 2], nclasses, nf, bias)
