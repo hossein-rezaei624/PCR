@@ -3,7 +3,7 @@ from torch.utils import data
 from utils.buffer.buffer import Buffer
 from agents.base import ContinualLearner
 from continuum.data_utils import dataset_transform
-from utils.setup_elements import transforms_match
+from utils.setup_elements import transforms_match, transforms_aug
 from utils.utils import maybe_cuda
 from utils.loss import SupConLoss
 
