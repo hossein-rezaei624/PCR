@@ -7,6 +7,7 @@ from utils.setup_elements import transforms_match
 from utils.utils import maybe_cuda
 from utils.loss import SupConLoss
 
+from torchvision import transforms
 
 transforms_aug = {
     'cifar100': transforms.Compose([
