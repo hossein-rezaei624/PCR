@@ -188,7 +188,7 @@ class ProxyContrastiveReplay(ContinualLearner):
         for ep in range(self.epoch):
             for i, batch_data in enumerate(train_loader):
                 # batch update
-                batch_x, batch_y = batch_data
+                batch_x, batch_y, indices_1 = batch_data
                 batch_x_aug = torch.stack([transforms_aug[self.data](batch_x[idx].cpu())
                                            for idx in range(batch_x.size(0))])
                 batch_x = maybe_cuda(batch_x, self.cuda)
